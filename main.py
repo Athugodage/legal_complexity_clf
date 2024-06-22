@@ -7,7 +7,7 @@ import json
 import io
 import base64
 import configparser
-
+import gdown
 
 from transformers import AutoTokenizer
 from sklearn.cluster import KMeans
@@ -29,7 +29,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 DEVICE = 'cpu'
 
-
+gdown.download_folder(config['GENERAL']['disk_url'])
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -363,6 +363,7 @@ class BlackBox():
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_path', type=str, default=config['OLD_PIPE']['input_path'])
     parser.add_argument('--bert_path', type=str, default=config['OLD_PIPE']['bert_path'])

@@ -30,6 +30,7 @@ class ComplexityClassifier():
 
 
 
+
         self.model = keras.models.load_model(lstm_path)
         self.from_disk = pickle.load(open(vectorizer_path, "rb"))
         self.vectorizer = TextVectorization.from_config(self.from_disk['config'])

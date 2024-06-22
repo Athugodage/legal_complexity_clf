@@ -1,0 +1,15 @@
+natasha
+transformers==4.26.1
+matplotlib
+seaborn
+torch
+argparse
+numpy
+regexp
+pickle4
+scipy
+scikit-learn
+pandas
+yellowbrick
+collections
+pandas<2.0.0

@@ -91,3 +91,12 @@ def create_and_load_model(bert_path, device='cuda'):
     return clf_model
 
 
+def load_custom_model(graph_path, cluster_path, mode='cluster'):
+    if mode == 'cluster':
+        path = cluster_path
+    elif mode == 'graph':
+        path = graph_path
+    with open(path, 'rb') as f:
+        custom_model = pickle.load(f)
+    print(f"{mode} model loaded", flush=True)
+    return custom_model

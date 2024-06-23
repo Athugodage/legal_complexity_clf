@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 from sklearn.cluster import KMeans
 
 
-from models import create_and_load_model, load_custom_model, ClusterCLF, GraphModel
+from models import create_and_load_model
 from bert_text_prediction import single_pipeline, get_last_hidden_state_embedding
 from text_preprocessing import prepare_russian_text, replace_org, Speller
 from classification import ComplexityClassifier
@@ -76,6 +76,17 @@ def __compose_dic__(names, probas):
         d[name] = proba
 
     return d
+
+
+def load_custom_model(graph_path, cluster_path, mode='cluster'):
+    if mode == 'cluster':
+        path = cluster_path
+    elif mode == 'graph':
+        path = graph_path
+    with open(path, 'rb') as f:
+        custom_model = pickle.load(f)
+    print(f"{mode} model loaded", flush=True)
+    return custom_model
 
 
 def __forreport__(dic, complexity):

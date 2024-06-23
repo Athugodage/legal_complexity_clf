@@ -27,8 +27,8 @@ class KADClassifier(nn.Module):
         return self.out(output)
 
 
-def create_and_load_model(args, device='cuda'):
-    clf_model = KADClassifier(model_name=args.bert_path).to(device)
+def create_and_load_model(bert_path, device='cuda'):
+    clf_model = KADClassifier(model_name=bert_path).to(device)
     return clf_model
 
 
@@ -67,11 +67,11 @@ class ClusterCLF:
         return pred, self.proba, clust_distances
 
 
-def load_custom_model(args, mode='cluster'):
+def load_custom_model(graph_path, cluster_path, mode='cluster'):
     if mode == 'cluster':
-        path = args.cluster_path
+        path = cluster_path
     elif mode == 'graph':
-        path = args.graph_path
+        path = graph_path
     with open(path, 'rb') as f:
         custom_model = pickle.load(f)
     print(f"{mode} model loaded", flush=True)

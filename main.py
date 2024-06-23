@@ -12,8 +12,8 @@ import gdown
 from transformers import AutoTokenizer
 from sklearn.cluster import KMeans
 
-import torch
-from models import create_and_load_model, load_custom_model, ClusterCLF, GraphModel
+
+from models import create_and_load_model, load_custom_model
 from bert_text_prediction import single_pipeline, get_last_hidden_state_embedding
 from text_preprocessing import prepare_russian_text, replace_org, Speller
 from classification import ComplexityClassifier
@@ -98,17 +98,24 @@ def __forreport__(dic, complexity):
 
 
 class BlackBox():
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, bert_path,
+                    cluster_path,
+                    graph_path,
+                    saved_data_path,
+                    cp_path,
+                    kad_path):
+
         logging.info('Now we start loading models and datasets')
-        self.tokenizer = AutoTokenizer.from_pretrained(self.args.bert_path)
-        self.clf_model = create_and_load_model(self.args, DEVICE)
-        self.cluster_model = load_custom_model(self.args, 'cluster')
-        self.graph_model = load_custom_model(self.args, 'graph')
-        self.categs_info = pd.read_csv(self.args.saved_data_path + f'/{args.kad_path}')  # map bert id to category id
-        self.leave_org = np.load(f'{self.args.saved_data_path}/leave_org.npy')  # for text preprocessing
-        self.feature_phrase = pd.read_csv(f'{self.args.saved_data_path}/feature_phrase.csv')  # for features
+        self.tokenizer = AutoTokenizer.from_pretrained(bert_path)
+        self.clf_model = create_and_load_model(bert_path, DEVICE)
+        self.cluster_model = load_custom_model(graph_path, cluster_path, 'cluster')
+        self.graph_model = load_custom_model(graph_path, cluster_path, 'graph')
+        self.categs_info = pd.read_csv(saved_data_path + f'/{kad_path}')  # map bert id to category id
+        self.leave_org = np.load(f'{saved_data_path}/leave_org.npy')  # for text preprocessing
+        self.feature_phrase = pd.read_csv(f'{saved_data_path}/feature_phrase.csv')  # for features
         self.df_kat = pd.read_csv(config['OLD_PIPE']['df_kat'])
+
+
 
 
         self.new_clf = ComplexityClassifier()
@@ -338,8 +345,11 @@ class BlackBox():
 
 
 
-    def implement(self):
-        with open(self.args.input_path, 'r', encoding='utf-8') as f:
+    def implement(self, input_path,
+                        save_report,
+                        save_prediction_path
+                  ):
+        with open(input_path, 'r', encoding='utf-8') as f:
             text = f.read()
             logging.info("Opened file")
 
@@ -357,11 +367,7 @@ class BlackBox():
 
 
 
-
-
-
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_path', type=str, default=config['OLD_PIPE']['input_path'])
     parser.add_argument('--bert_path', type=str, default=config['OLD_PIPE']['bert_path'])
@@ -376,8 +382,17 @@ if __name__ == '__main__':
     args = parser.parse_args()
     KAD_CAT_INFO_PATH = args.kad_path
 
-    pipe = BlackBox(args)
-    result = pipe.implement()
+    pipe = BlackBox(bert_path=args.bert_path,
+                    cluster_path=args.cluster_path,
+                    graph_path=args.graph_path,
+                    saved_data_path=args.saved_data_path,
+                    cp_path=args.cp_path,
+                    kad_path=args.kad_path,
+                    )
+
+    result = pipe.implement(input_path=args.input_path,
+                            save_report=args.save_report,
+                            save_prediction_path=args.save_prediction_path)
     print(result)
 
 

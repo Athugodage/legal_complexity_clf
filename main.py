@@ -24,6 +24,7 @@ import matplotlib.image as mpimg
 from yellowbrick.cluster import KElbowVisualizer, InterclusterDistance
 
 import logging
+import pickle
 
 config = configparser.ConfigParser()
 config.read('config.ini')

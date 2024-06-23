@@ -13,7 +13,7 @@ from transformers import AutoTokenizer
 from sklearn.cluster import KMeans
 
 
-from models import create_and_load_model, load_custom_model
+from models import create_and_load_model, load_custom_model, ClusterCLF, GraphModel
 from bert_text_prediction import single_pipeline, get_last_hidden_state_embedding
 from text_preprocessing import prepare_russian_text, replace_org, Speller
 from classification import ComplexityClassifier

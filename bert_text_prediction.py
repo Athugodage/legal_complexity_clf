@@ -29,7 +29,7 @@ def predict_single(clf_model, encoding):
     preds = torch.argmax(proba, dim=1).item()
     return preds, proba
     
-def single_pipeline(clf_model, tokenizer, args, raw_text):
+def single_pipeline(clf_model, tokenizer, raw_text):
     cleaned_text, encoding = prepare_text(raw_text, tokenizer)
     bert_id_pred, bert_proba = predict_single(clf_model, encoding)
 

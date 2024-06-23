@@ -157,9 +157,9 @@ class BlackBox():
         return r
 
 
-    def complexity_main(self):
+    def complexity_main(self, text):
         # get bert embeddings
-        _, _, encoding, _ = single_pipeline(self.clf_model, self.tokenizer)
+        _, _, encoding, _ = single_pipeline(self.clf_model, self.tokenizer, text)
         bert_emb = get_last_hidden_state_embedding(encoding, self.clf_model).cpu().detach().numpy().reshape(-1)
 
         complexity = max(
@@ -232,7 +232,7 @@ class BlackBox():
 
     def complexity1(self, text):
         # combined model prediction
-        _, bert_proba, encoding, cleaned_text = single_pipeline(self.clf_model, self.tokenizer, self.args, text)
+        _, bert_proba, encoding, cleaned_text = single_pipeline(self.clf_model, self.tokenizer, text)
         bert_emb = get_last_hidden_state_embedding(encoding, self.clf_model)
         _, cluster_proba, clust_distances = self.cluster_model.predict(bert_emb)
         text_money_org_replaced = replace_org(cleaned_text, self.leave_org)
@@ -251,7 +251,7 @@ class BlackBox():
             combo_pred, self.categs_info, combo_proba.reshape(-1).tolist(),
             preprocessed_tokens)
 
-        complexity = self.complexity_main()
+        complexity = self.complexity_main(text)
 
         logging.info('Found complexity by clusters')
         return complexity, by_distance, dist_to_center, clust_distances

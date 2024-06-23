@@ -27,6 +27,10 @@ class KADClassifier(nn.Module):
         return self.out(output)
 
 
+def create_and_load_model(bert_path, device='cuda'):
+    clf_model = KADClassifier(model_name=bert_path).to(device)
+    return clf_model
+
 
 class ClusterCLF:
     def __init__(self, model, cluster_to_category, cluster_coef, c_dist, n_classes=6):
@@ -63,6 +67,16 @@ class ClusterCLF:
         return pred, self.proba, clust_distances
 
 
+def load_custom_model(graph_path, cluster_path, mode='cluster'):
+    if mode == 'cluster':
+        path = cluster_path
+    elif mode == 'graph':
+        path = graph_path
+    with open(path, 'rb') as f:
+        custom_model = pickle.load(f)
+    print(f"{mode} model loaded", flush=True)
+    return custom_model
+
 
 class GraphModel:
     def __init__(self, graph_data, graph_coef=1e-4):
@@ -83,20 +97,3 @@ class GraphModel:
     def predict(self, tokens):
         proba = self.proba(tokens)
         return self.bert_ids[proba.argmax()]
-
-
-
-def create_and_load_model(bert_path, device='cuda'):
-    clf_model = KADClassifier(model_name=bert_path).to(device)
-    return clf_model
-
-
-def load_custom_model(graph_path, cluster_path, mode='cluster'):
-    if mode == 'cluster':
-        path = cluster_path
-    elif mode == 'graph':
-        path = graph_path
-    with open(path, 'rb') as f:
-        custom_model = pickle.load(f)
-    print(f"{mode} model loaded", flush=True)
-    return custom_model

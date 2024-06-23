@@ -181,10 +181,10 @@ class BlackBox():
             return 'Очень сложный'
 
 
-    def get_barplot_info(self, complexity):
+    def get_barplot_info(self, complexity, save_report):
         ## DATA PREPARATION
 
-        with open(self.args.save_report, 'r') as f:
+        with open(save_report, 'r') as f:
             f = json.load(f)
         probas = f['report']['probability']
         names = self.df_kat['Descr'].to_list()
@@ -284,7 +284,7 @@ class BlackBox():
         return '<img align="left" src="data:image/png;base64,%s">' % s
 
 
-    def make_review(self, complexity, by_distance, dist_to_center, clust_distances):
+    def make_review(self, complexity, by_distance, dist_to_center, clust_distances, save_report):
         plot_description = '''0 - экономические споры\n 1-корпоративные споры\n
                                   2 - административное правоотношение\n 3 - несостоятельность (банкротство)\n
                                   4 - третейский суд\n 5 - иностранный суд'''
@@ -307,13 +307,13 @@ class BlackBox():
         result_dic1 = {'cluster_distances': clust_distances,
                        'dist_to_center': dist_to_center}
 
-        with open(self.args.save_report, 'w') as w:
+        with open(save_report, 'w') as w:
             json.dump(result_dic, w, cls=NumpyEncoder)
 
         with open('cluster_complexity.json', 'w') as w:
             json.dump(result_dic1, w, cls=NpEncoder)
 
-        barplot_data, barplot_xlabels, nearest_clusters = self.get_barplot_info(complexity)  # data for barplot. ADD it to json
+        barplot_data, barplot_xlabels, nearest_clusters = self.get_barplot_info(complexity, save_report)  # data for barplot. ADD it to json
         clsuter_plot = self.cluster_plot()  # draw cluster plot
 
         report0 = 'Данный документ можно классифицировать как '  # next: complexity.lower()
@@ -361,7 +361,7 @@ class BlackBox():
         label2 = self.label2id[str(self.complexity2(text)).lower()]
         final_label = self.id2label[round(np.mean([label1, label2]))]
 
-        self.make_review(final_label, by_distance, dist_to_center, clust_distances)
+        self.make_review(final_label, by_distance, dist_to_center, clust_distances, save_report)
 
         return final_label
 

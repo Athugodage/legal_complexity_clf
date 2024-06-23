@@ -347,8 +347,8 @@ class BlackBox():
 
         label1, by_distance, dist_to_center, clust_distances = self.complexity1(text)
 
-        label1 = self.label2id[label1]
-        label2 = self.label2id[self.complexity2(text)]
+        label1 = self.label2id[label1.lower()]
+        label2 = self.label2id[str(self.complexity2(text)).lower()]
         final_label = self.id2label[round(np.mean([label1, label2]))]
 
         self.make_review(final_label, by_distance, dist_to_center, clust_distances)

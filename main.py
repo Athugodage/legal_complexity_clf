@@ -104,6 +104,15 @@ class BlackBox():
                     saved_data_path,
                     cp_path,
                     kad_path):
+        '''
+
+        :param bert_path:
+        :param cluster_path:
+        :param graph_path:
+        :param saved_data_path:
+        :param cp_path:
+        :param kad_path:
+        '''
 
         logging.info('Now we start loading models and datasets')
         self.tokenizer = AutoTokenizer.from_pretrained(bert_path)

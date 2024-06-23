@@ -112,7 +112,7 @@ class BlackBox():
 
 
         self.new_clf = ComplexityClassifier()
-        self.speller = Speller()
+        self.speller = Speller(model=config['GENERAL']['speller'])
 
         logging.info('Loaded all models! Prepared to process text.')
 

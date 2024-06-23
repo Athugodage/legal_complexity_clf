@@ -23,7 +23,7 @@ ner_tagger = NewsNERTagger(emb)
 
 class Speller():
     def __init__(self,
-                 model : str):
+                 model):
         self.model = M2M100ForConditionalGeneration.from_pretrained(model)
         self.tokenizer = M2M100Tokenizer.from_pretrained(model, src_lang="ru", tgt_lang="ru")
 

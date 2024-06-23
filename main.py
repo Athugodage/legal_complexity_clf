@@ -251,9 +251,7 @@ class BlackBox():
             combo_pred, self.categs_info, combo_proba.reshape(-1).tolist(),
             preprocessed_tokens)
 
-        complexity = self.complexity_main(self.args, self.cluster_model,
-                                     self.clf_model,
-                                     self.tokenizer)
+        complexity = self.complexity_main()
 
         logging.info('Found complexity by clusters')
         return complexity, by_distance, dist_to_center, clust_distances

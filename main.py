@@ -25,12 +25,19 @@ import matplotlib.image as mpimg
 from yellowbrick.cluster import KElbowVisualizer, InterclusterDistance
 
 import logging
+import zipfile
 
 config = configparser.ConfigParser()
 config.read('config.ini')
 DEVICE = 'cpu'
 
 gdown.download_folder(config['GENERAL']['disk_url'])
+
+path_to_zip_file = config['GENERAL']['zip_path']
+with zipfile.ZipFile(path_to_zip_file, 'r') as zip_ref:
+    zip_ref.extractall(config['GENERAL']['data_folder'])
+
+
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):

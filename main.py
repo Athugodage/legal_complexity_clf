@@ -284,7 +284,40 @@ class BlackBox():
         return '<img align="left" src="data:image/png;base64,%s">' % s
 
 
-    def make_review(self, complexity, by_distance, dist_to_center, clust_distances, save_report):
+
+    def gunning_fog(self, text):
+        '''
+        Get Gunning Fog Readability Index score from text.
+
+        :param text:
+        :return:
+        '''
+        text = str(text)
+
+        tokens = [token.text for token in list(tokenize(text))]
+        tokens_length = len(tokens) if len(tokens) > 0 else 1
+
+        sent_length = len([sent.text for sent in list(sentenize(text))])
+        sent_length = sent_length if sent_length > 0 else 1
+        complex_tokens_len = len([tok for tok in tokens if len(tok) > 6])
+        formule = 0.4 * (tokens_length / sent_length) + 100 * (complex_tokens_len / tokens_length)
+        return formule
+
+    def transform(self, score):
+        '''
+        Convert gunning fog index score into a label in Russian
+
+        :param score: Gunning Fog Index
+        :return:
+        '''
+        if score <= 78:
+            return 'легкий'
+        else:
+            return 'сложный'
+
+
+    def make_review(self, final_label, dist_to_center, clust_distances,
+                         save_report, read_index, label1, label2):
         plot_description = '''0 - экономические споры\n 1-корпоративные споры\n
                                   2 - административное правоотношение\n 3 - несостоятельность (банкротство)\n
                                   4 - третейский суд\n 5 - иностранный суд'''
@@ -298,7 +331,7 @@ class BlackBox():
         categs_in = [ft_dict[categ] for categ in categs_in]
 
         result_dic = {'report': self.res,  ## all initial information from the previous worker
-                      'complexity_class': complexity,  ## predict_complexity()
+                      'complexity_class': label1,  ## predict_complexity by cluster
                       'distances': clust_distances,
                       'cluster_centres': self.cluster_model.model.cluster_centers_,
                       'cluster_plot_description': plot_description
@@ -313,16 +346,23 @@ class BlackBox():
         with open('cluster_complexity.json', 'w') as w:
             json.dump(result_dic1, w, cls=NpEncoder)
 
-        barplot_data, barplot_xlabels, nearest_clusters = self.get_barplot_info(complexity, save_report)  # data for barplot. ADD it to json
+        barplot_data, barplot_xlabels, nearest_clusters = self.get_barplot_info(complexity=label1, save_report=save_report)  # data for barplot. ADD it to json
         clsuter_plot = self.cluster_plot()  # draw cluster plot
 
-        report0 = 'Данный документ можно классифицировать как '  # next: complexity.lower()
-        report1 = ', т.к. он входит в следующие кластера: '  # next: ', '.join(nearest_clusters)
-        report2 = 'Данный документ принадлежит следующим категориям:\n'  # next: ', '.join(categs_in)
-        report3 = '''.
-                На графике ниже вы видете какие кластера с какой вероятностью можно отнести к данному тексту. 
 
-                Нотабене. Ниже представлена расшифровка аббревиатур:
+        report0 = 'Данный документ можно классифицировать как '  # next: complexity.lower()
+        report00 = '''\nДанный вердикт вынесен, принимая во внимание три критерия: (1) текстологическая сложность, 
+        (2) кол-во соотнесений с кластерами, 
+        (3) предсказание модели классификации, обученной нами на размеченных текстах.\n
+        Согласно критерию соотнесения с кластерами, этот текст определяется как '''  # next: label1
+        report1 = ', т.к. он входит в следующие кластера: '  # next: ', '.join(nearest_clusters)
+        report2 = '\nДанный документ принадлежит следующим категориям:\n'  # next: ', '.join(categs_in)
+        report3 = '\nОбученная нами модель классификации определила этот текст как ' # next: label
+        report4 = '\nИндекс удобочитаемости равен ' # next: read_index
+        report5 = '. Так что можно сказать, что этот текст '
+        report6 = '''.
+                На графике ниже вы видете какие кластера с какой вероятностью можно отнести к данному тексту. 
+                 Нотабене. Ниже представлена расшифровка аббревиатур:
                 ЭС - экономические споры,
                 КС - корпоративные споры,
                 АП - административное правоотношение,
@@ -330,15 +370,23 @@ class BlackBox():
                 ТС - третейский суд,
                 ИС - иностранный суд'''
 
-        text_report = {0: report0, 1: complexity.lower(), 2: report1, 3: ', '.join(nearest_clusters),
-                       4: report2, 5: ', '.join(categs_in), 6: report3}
+        text_report = {0: report0, 1: final_label.lower(), 2: report00, 3: label1, 4: report1, 5: ', '.join(nearest_clusters),
+                       6: report2, 7: ', '.join(categs_in), 8: report3, 9: label2,
+                       10: report4, 11: read_index, 12: report5, 13: self.transform(read_index),
+                       14: report6}
 
         res = {'text_report': text_report,
                'barplot_data': barplot_data,
                'barplot_labels': barplot_xlabels,
                'cluster_plot': clsuter_plot,
                'result_dic': result_dic,
-               'result_dic1': result_dic1}
+               'result_dic1': result_dic1,
+               'readability_index': read_index,
+               'complexity_labels': {'cluster': label1,
+                                     'lstm': label2,
+                                     'readability_score': read_index,
+                                     'final': final_label},
+               }
 
         with open('res.json', 'w') as w:
             json.dump(res, w, cls=NumpyEncoder)
@@ -361,7 +409,10 @@ class BlackBox():
         label2 = self.label2id[str(self.complexity2(text)).lower()]
         final_label = self.id2label[round(np.mean([label1, label2]))]
 
-        self.make_review(final_label, by_distance, dist_to_center, clust_distances, save_report)
+        read_index = self.gunning_fog(text)
+
+        self.make_review(final_label, dist_to_center, clust_distances,
+                         save_report, read_index, self.id2label[label1], self.id2label[label2])
 
         return final_label
 

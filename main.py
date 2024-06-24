@@ -11,6 +11,7 @@ import gdown
 
 from transformers import AutoTokenizer
 from sklearn.cluster import KMeans
+from razdel import tokenize, sentenize
 
 
 from models import create_and_load_model, load_custom_model, ClusterCLF, GraphModel
